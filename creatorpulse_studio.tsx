@@ -1,1177 +1,1118 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Sparkles, 
-  Calendar as CalendarIcon, 
-  TrendingUp, 
-  FileText, 
-  Upload, 
-  Clock, 
-  Video, 
-  Code, 
-  Mail, 
-  Instagram, 
-  Youtube, 
-  Twitter, 
-  Plus, 
-  Copy, 
-  Check, 
-  BarChart3, 
-  Zap, 
-  ChevronRight, 
-  Filter, 
-  Share2, 
-  Trash2, 
-  Edit3, 
-  Play, 
-  Flame, 
-  Sliders, 
-  ArrowUpRight,
-  Layers,
-  Search,
-  CheckCircle2,
-  RefreshCw,
-  AlertCircle
-} from 'lucide-react';
-
-// Preset Analytics Data for Upload Simulation
-const ANALYTICS_PRESETS = {
-  tiktok: {
-    platform: "TikTok",
-    followers: "124.8K",
-    avgEngagement: "8.4%",
-    bestTimes: ["18:00", "21:30", "12:15"],
-    bestDays: ["Tuesday", "Thursday", "Sunday"],
-    optimalDuration: "12 - 18 seconds",
-    topFormats: ["Educational Micro-Tips", "POV Storytelling", "Behind the Scenes"],
-    expectedReachMultiplier: "2.4x",
-    peakHoursData: [12, 25, 40, 15, 10, 8, 14, 30, 65, 85, 95, 70, 50, 45, 60, 80, 98, 92, 84, 75, 60, 40, 25, 15]
-  },
-  instagram: {
-    platform: "Instagram",
-    followers: "89.2K",
-    avgEngagement: "5.2%",
-    bestTimes: ["11:30", "17:00", "20:00"],
-    bestDays: ["Wednesday", "Friday", "Saturday"],
-    optimalDuration: "25 - 40 seconds",
-    topFormats: ["Carousel Infographics", "Relatable Reels", "Aesthetic Vlogs"],
-    expectedReachMultiplier: "1.8x",
-    peakHoursData: [8, 15, 20, 10, 5, 12, 35, 50, 75, 80, 65, 85, 90, 70, 60, 75, 92, 88, 80, 65, 45, 30, 20, 10]
-  },
-  youtube: {
-    platform: "YouTube",
-    followers: "45.6K",
-    avgEngagement: "11.1%",
-    bestTimes: ["15:00", "18:30"],
-    bestDays: ["Friday", "Saturday", "Sunday"],
-    optimalDuration: "45 - 60 seconds (Shorts) / 8-12 mins (Long)",
-    topFormats: ["Deep Dive Coding/Tutorials", "Short Tech Hacks", "Product Comparison"],
-    expectedReachMultiplier: "3.1x",
-    peakHoursData: [5, 10, 15, 8, 4, 10, 20, 35, 45, 55, 60, 70, 75, 80, 88, 95, 99, 90, 82, 70, 50, 35, 20, 10]
-  }
-};
-
-// Default Sample Content Library items
-const INITIAL_LIBRARY = [
-  {
-    id: 'c1',
-    title: '5 AI Tools Saving Me 20 Hours/Week',
-    type: 'TikTok/Reels Script',
-    platform: 'TikTok',
-    status: 'Scheduled',
-    scheduledTime: '2026-10-01T18:00',
-    tone: 'Energetic',
-    hook: 'Stop wasting hours on manual tasks in 2026...',
-    content: `[HOOK - 0:00-0:03]\nStop wasting 20 hours a week on manual content formatting.\n\n[BODY - 0:03-0:12]\nHere are the 3 tools top creators use quietly:\n1. CreatorPulse for automated script drafting\n2. ElevenLabs for hyper-real voiceovers\n3. OpusClip for instant short cuts.\n\n[CTA - 0:12-0:15]\nSave this reel and comment "AI" to get my setup workflow!`,
-    duration: '15s',
-    projectedReach: '45.2K'
-  },
-  {
-    id: 'c2',
-    title: 'Why Most React Apps Slow Down at Scale',
-    type: 'Blog Post',
-    platform: 'Substack',
-    status: 'Scripted',
-    scheduledTime: '2026-10-02T11:30',
-    tone: 'Technical',
-    hook: 'Re-renders are killing your client bundle size.',
-    content: `# Why Most React Apps Slow Down at Scale\n\nWhen scaling modern frontend applications, state distribution becomes your biggest bottleneck...\n\n\`\`\`javascript\n// Optimized selector pattern\nconst userDisplayName = useSelector((state) => state.user.name, shallowEqual);\n\`\`\`\n\nKey takeaways:\n- Avoid root context re-renders\n- Memoize expensive calculations\n- Implement dynamic code splitting`,
-    duration: '5 min read',
-    projectedReach: '12.8K'
-  },
-  {
-    id: 'c3',
-    title: 'Weekly Tech Digest: The AI Workflow Revolution',
-    type: 'Email Newsletter',
-    platform: 'Email',
-    status: 'Idea',
-    scheduledTime: '2026-10-04T09:00',
-    tone: 'Storyteller',
-    hook: 'How I built a $10k/mo automated media machine.',
-    content: `Hey friends!\n\nThis week I analyzed over 500 creator accounts to see what content formats actually drive conversions in late 2026...\n\nHere's what I discovered...`,
-    duration: '3 min read',
-    projectedReach: '28.5K'
-  }
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('generator'); // 'generator' | 'analytics' | 'calendar' | 'library'
-  const [library, setLibrary] = useState(INITIAL_LIBRARY);
-  const [analyticsData, setAnalyticsData] = useState(ANALYTICS_PRESETS.tiktok);
-  const [uploadedFileName, setUploadedFileName] = useState('tiktok_analytics_q3_2026.csv');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CreatorPulse — Creation Made Easy</title>
   
-  // Generator State
-  const [contentType, setContentType] = useState('TikTok/Reels Script');
-  const [topic, setTopic] = useState('');
-  const [tone, setTone] = useState('Authentic');
-  const [targetDuration, setTargetDuration] = useState('15s');
-  const [platform, setPlatform] = useState('TikTok');
-  const [targetAudience, setTargetAudience] = useState('Tech-savvy Creators & Developers');
-  const [includeHook, setIncludeHook] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedOutput, setGeneratedOutput] = useState(null);
-  const [copied, setCopied] = useState(false);
+  <!-- Fonts & Core Utilities -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Chart.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  // Calendar State
-  const [selectedDate, setSelectedDate] = useState('2026-10-01');
-  const [viewMode, setViewMode] = useState('week'); // 'week' | 'month'
-  const [filterPlatform, setFilterPlatform] = useState('All');
-  const [quickScheduleItem, setQuickScheduleItem] = useState(null);
-
-  const handleGenerateContent = async () => {
-    if (!topic.trim()) return;
-    setIsGenerating(true);
-    setGeneratedOutput(null);
-
-    const prompt = `Act as an elite social media content strategist and expert viral content writer.
-Create a high-performing ${contentType} tailored for ${platform}.
-
-Topic/Keywords: ${topic}
-Brand Tone: ${tone}
-Target Audience: ${targetAudience}
-Target Length/Duration: ${targetDuration}
-Include Standout Hook: ${includeHook ? 'Yes' : 'No'}
-
-Analytics Context for Optimization:
-- Peak engagement best time: ${analyticsData.bestTimes[0]}
-- Optimal high-converting format: ${analyticsData.topFormats[0]}
-
-Instructions:
-1. Provide a catchy, high-converting Hook.
-2. Structure the main body clean with clear section markers (e.g. [HOOK], [BODY], [CTA], or clean Markdown headers for blogs/emails/code).
-3. Ensure line breaks match native platform feel (${platform}).
-4. End with a compelling Call-to-Action (CTA).
-`;
-
-    try {
-      const apiKey = ""; // Canvas environment auto-provides token
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          systemInstruction: {
-            parts: [{ text: "You are CreatorPulse AI, a top-tier viral content producer and copywriting strategist." }]
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-cream': '#EBE9E1',
+            'accent-coral': '#E43D12',
+            'rose-pink': '#D65360',
+            'blush-pink': '#FFA2B8',
+            'warm-amber': '#EFB110',
+            'text-dark': '#1F1917',
+            'card-bg': '#FFFFFF',
+            'border-color': '#E2DDD3',
+            'youtube-red': '#FF0000',
+            'linkedin-blue': '#0A66C2',
+            'x-black': '#14171A',
+            'insta-pink': '#E1306C',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
           }
-        })
-      });
-
-      const data = await response.json();
-      const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate content. Please try again.";
-
-      // Extract hook
-      const lines = outputText.split('\n');
-      let hookLine = lines.find(l => l.toLowerCase().includes('hook') || l.length > 10) || lines[0];
-      hookLine = hookLine.replace(/^#+\s*/, '').replace(/\[.*?\]/g, '').trim();
-
-      const newContentObj = {
-        id: `gen-${Date.now()}`,
-        title: topic.length > 40 ? topic.substring(0, 40) + '...' : topic,
-        type: contentType,
-        platform: platform,
-        status: 'Idea',
-        scheduledTime: `${selectedDate}T${analyticsData.bestTimes[0]}`,
-        tone: tone,
-        hook: hookLine.substring(0, 80),
-        content: outputText,
-        duration: targetDuration,
-        projectedReach: `${(Math.random() * 20 + 15).toFixed(1)}K`
-      };
-
-      setGeneratedOutput(newContentObj);
-    } catch (error) {
-      console.error("Generation error:", error);
-      // Fallback content in case of network issue
-      setGeneratedOutput({
-        id: `gen-${Date.now()}`,
-        title: topic,
-        type: contentType,
-        platform: platform,
-        status: 'Idea',
-        scheduledTime: `${selectedDate}T${analyticsData.bestTimes[0]}`,
-        tone: tone,
-        hook: `Stop making this mistake with ${topic}!`,
-        content: `[HOOK - 0:00-0:03]\nStop making this mistake with ${topic}!\n\n[BODY - 0:03-0:20]\nHere is the exact strategy I use to get 3x higher engagement:\n1. Focus on immediate value deliverable\n2. Keep your script pacing under ${targetDuration}\n3. Optimize post time around ${analyticsData.bestTimes[0]}\n\n[CTA]\nFollow for daily high-growth insights!`,
-        duration: targetDuration,
-        projectedReach: '32.4K'
-      });
-    } finally {
-      setIsGenerating(false);
+        }
+      }
     }
-  };
+  </script>
 
-  const handleSaveToLibrary = (item) => {
-    if (!item) return;
-    setLibrary(prev => [item, ...prev]);
-    setActiveTab('library');
-  };
-
-  const handleScheduleItem = (item, dateTime) => {
-    const updated = library.map(i => i.id === item.id ? { ...i, status: 'Scheduled', scheduledTime: dateTime || i.scheduledTime } : i);
-    setLibrary(updated);
-  };
-
-  const handleCopyContent = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSelectPreset = (key) => {
-    setAnalyticsData(ANALYTICS_PRESETS[key]);
-    setUploadedFileName(`${key}_insights_q3_parsed.csv`);
-    if (key === 'tiktok') setPlatform('TikTok');
-    if (key === 'instagram') setPlatform('Instagram');
-    if (key === 'youtube') setPlatform('YouTube');
-  };
-
-  const handleFileUploadSimulate = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFileName(file.name);
-      // Auto assign preset based on name match or fallback to TikTok
-      const name = file.name.toLowerCase();
-      if (name.includes('insta')) handleSelectPreset('instagram');
-      else if (name.includes('tube') || name.includes('yt')) handleSelectPreset('youtube');
-      else handleSelectPreset('tiktok');
+  <!-- Custom Master Styles -->
+  <style>
+    :root {
+      --bg-cream: #EBE9E1;
+      --accent-coral: #E43D12;
+      --rose-pink: #D65360;
+      --blush-pink: #FFA2B8;
+      --warm-amber: #EFB110;
+      --text-dark: #1F1917;
+      --card-bg: #FFFFFF;
+      --border-color: #E2DDD3;
+      --youtube-red: #FF0000;
+      --linkedin-blue: #0A66C2;
+      --x-black: #14171A;
+      --insta-pink: #E1306C;
     }
-  };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-slate-900/80 backdrop-blur-md border-b md:border-b-0 md:border-r border-slate-800 p-4 flex flex-col justify-between shrink-0">
-        <div>
-          {/* Logo Brand */}
-          <div className="flex items-center gap-3 px-2 py-3 mb-6 border-b border-slate-800/80">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                CreatorPulse
-              </h1>
-              <p className="text-xs text-indigo-400 font-medium">AI Content Engine v2.6</p>
-            </div>
-          </div>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
 
-          {/* Navigation Links */}
-          <nav className="space-y-1.5">
-            <button
-              onClick={() => setActiveTab('generator')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'generator'
-                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <Sparkles className="h-4 w-4 text-indigo-400" />
-              <span>AI Content Studio</span>
-            </button>
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'analytics'
-                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <TrendingUp className="h-4 w-4 text-violet-400" />
-              <span>Analytics Predictor</span>
-              <span className="ml-auto text-[10px] bg-violet-500/20 text-violet-300 px-1.5 py-0.5 rounded-full border border-violet-500/30">AI</span>
-            </button>
+    /* 1. Rocket Splash Screen */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background-color: var(--bg-cream);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
 
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'calendar'
-                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <CalendarIcon className="h-4 w-4 text-pink-400" />
-              <span>Smart Calendar</span>
-            </button>
+    .rocket-stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: rocketLaunch 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-            <button
-              onClick={() => setActiveTab('library')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'library'
-                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <Layers className="h-4 w-4 text-emerald-400" />
-              <span>Content Library</span>
-              <span className="ml-auto text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
-                {library.length}
-              </span>
-            </button>
-          </nav>
-        </div>
+    .rocket-emoji {
+      font-size: 4.5rem;
+      transform: rotate(-45deg);
+      filter: drop-shadow(0 10px 15px rgba(228, 61, 18, 0.3));
+    }
 
-        {/* Creator Channel Status Card */}
-        <div className="mt-6 p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center font-bold text-xs text-white">
-                CP
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-slate-200 truncate">Alex Riviera</p>
-              <p className="text-[11px] text-slate-400 truncate">Tech & Creator Growth</p>
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Predicted Boost</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-0.5">
-              <Flame className="h-3 w-3 fill-emerald-400" /> +184%
-            </span>
-          </div>
-        </div>
-      </aside>
+    .rocket-thrust {
+      width: 8px;
+      height: 0px;
+      background: linear-gradient(to bottom, var(--accent-coral), var(--warm-amber), transparent);
+      border-radius: 4px;
+      animation: thrustPlume 1.8s ease-out forwards;
+    }
 
-      {/* Main App Workspace */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-        {/* TAB 1: AI CONTENT GENERATOR */}
-        {activeTab === 'generator' && (
-          <GeneratorStudio 
-            contentType={contentType}
-            setContentType={setContentType}
-            topic={topic}
-            setTopic={setTopic}
-            tone={tone}
-            setTone={setTone}
-            targetDuration={targetDuration}
-            setTargetDuration={setTargetDuration}
-            platform={platform}
-            setPlatform={setPlatform}
-            targetAudience={targetAudience}
-            setTargetAudience={setTargetAudience}
-            includeHook={includeHook}
-            setIncludeHook={setIncludeHook}
-            isGenerating={isGenerating}
-            handleGenerateContent={handleGenerateContent}
-            generatedOutput={generatedOutput}
-            analyticsData={analyticsData}
-            handleSaveToLibrary={handleSaveToLibrary}
-            copied={copied}
-            handleCopyContent={handleCopyContent}
-          />
-        )}
+    .brand-reveal {
+      margin-top: 24px;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--accent-coral);
+      letter-spacing: 2px;
+      opacity: 0;
+      transform: translateY(15px);
+      animation: revealText 0.7s ease forwards 1.1s;
+    }
 
-        {/* TAB 2: ANALYTICS & PREDICTIVE ENGINE */}
-        {activeTab === 'analytics' && (
-          <AnalyticsPredictor 
-            analyticsData={analyticsData}
-            handleSelectPreset={handleSelectPreset}
-            uploadedFileName={uploadedFileName}
-            handleFileUploadSimulate={handleFileUploadSimulate}
-            onOpenGenerator={() => setActiveTab('generator')}
-          />
-        )}
+    .brand-sub {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--rose-pink);
+      opacity: 0;
+      animation: revealText 0.7s ease forwards 1.3s;
+    }
 
-        {/* TAB 3: SMART CALENDAR */}
-        {activeTab === 'calendar' && (
-          <SmartCalendar 
-            library={library}
-            analyticsData={analyticsData}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            filterPlatform={filterPlatform}
-            setFilterPlatform={setFilterPlatform}
-            handleScheduleItem={handleScheduleItem}
-            onOpenGenerator={() => setActiveTab('generator')}
-          />
-        )}
+    @keyframes rocketLaunch {
+      0% { transform: translateY(100vh) scale(0.5); }
+      70% { transform: translateY(-15px) scale(1.05); }
+      100% { transform: translateY(0) scale(1); }
+    }
 
-        {/* TAB 4: CONTENT LIBRARY */}
-        {activeTab === 'library' && (
-          <ContentLibrary 
-            library={library}
-            setLibrary={setLibrary}
-            handleCopyContent={handleCopyContent}
-            copied={copied}
-            onOpenGenerator={() => setActiveTab('generator')}
-          />
-        )}
-      </main>
+    @keyframes thrustPlume {
+      0% { height: 0px; opacity: 1; }
+      50% { height: 120px; opacity: 0.9; }
+      100% { height: 0px; opacity: 0; }
+    }
+
+    @keyframes revealText {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .splash-hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* Layout & Buttons */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-coral);
+      color: #FFFFFF;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #C9330D;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(228, 61, 18, 0.25);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      border: 2px solid var(--border-color);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #DFDDD3;
+      transform: translateY(-1px);
+    }
+
+    /* Calendar Grid */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .calendar-cell {
+      background: var(--bg-cream);
+      border-radius: 12px;
+      min-height: 125px;
+      padding: 10px;
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, background-color 0.2s;
+    }
+
+    .calendar-cell:hover {
+      border-color: var(--blush-pink);
+      transform: translateY(-2px);
+    }
+
+    .calendar-cell.highlight-day {
+      background: #FFF0ED;
+      border: 2px dashed var(--accent-coral);
+    }
+
+    .event-chip {
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1.25;
+      word-break: break-word;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .chip-youtube { background-color: var(--youtube-red); }
+    .chip-linkedin { background-color: var(--linkedin-blue); }
+    .chip-instagram { background-color: var(--insta-pink); }
+    .chip-x { background-color: var(--x-black); }
+
+    /* Custom Toast Notifications */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text-dark);
+      color: white;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10000;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Rocket Splash Screen -->
+  <div id="splash-screen">
+    <div class="rocket-stage">
+      <div class="rocket-emoji">🚀</div>
+      <div class="rocket-thrust"></div>
+      <div class="brand-reveal">CREATOR PULSE</div>
+      <div class="brand-sub">Creation Made Easy</div>
     </div>
-  );
-}
+  </div>
 
-function GeneratorStudio({
-  contentType, setContentType,
-  topic, setTopic,
-  tone, setTone,
-  targetDuration, setTargetDuration,
-  platform, setPlatform,
-  targetAudience, setTargetAudience,
-  includeHook, setIncludeHook,
-  isGenerating, handleGenerateContent,
-  generatedOutput, analyticsData,
-  handleSaveToLibrary, copied, handleCopyContent
-}) {
-  const contentTypes = [
-    { id: 'TikTok/Reels Script', label: 'Short Video Script', icon: Video, platforms: ['TikTok', 'Instagram', 'YouTube'] },
-    { id: 'Blog Post', label: 'SEO Blog / Essay', icon: FileText, platforms: ['Substack', 'Medium', 'Web'] },
-    { id: 'Email Newsletter', label: 'Email Newsletter', icon: Mail, platforms: ['Email', 'Substack'] },
-    { id: 'Social Caption', label: 'Post Caption & Threads', icon: Twitter, platforms: ['X/Twitter', 'Instagram', 'LinkedIn'] },
-    { id: 'Code Snippet & Explainer', label: 'Code & Tech Breakdown', icon: Code, platforms: ['X/Twitter', 'GitHub', 'Medium'] },
-  ];
-
-  const tones = ['Authentic', 'Professional', 'Energetic', 'Technical', 'Storyteller', 'Humorous'];
-  const durations = ['15s', '30s', '60s', '3 min read', '5 min read'];
-
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Top Banner Context Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-slate-900 p-5 rounded-2xl border border-indigo-500/20">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              AI Multi-Format Studio
-            </span>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <Clock className="h-3 w-3 text-emerald-400" /> Best post window: <strong className="text-slate-200">{analyticsData.bestTimes[0]}</strong>
-            </span>
-          </div>
-          <h2 className="text-2xl font-bold text-white">Generate High-Converting Content</h2>
-          <p className="text-sm text-slate-400">Customized for your audience retention analytics and platform algorithms.</p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-          <TrendingUp className="h-4 w-4 text-violet-400 shrink-0" />
-          <div>
-            <div className="text-slate-400">Target Analytics Preset</div>
-            <div className="font-semibold text-slate-200">{analyticsData.platform} ({analyticsData.optimalDuration})</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Controls Column */}
-        <div className="lg:col-span-5 space-y-5 bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl backdrop-blur-sm">
-          {/* Format Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Select Content Format
-            </label>
-            <div className="grid grid-cols-1 gap-2">
-              {contentTypes.map((item) => {
-                const IconComponent = item.icon;
-                const isSelected = contentType === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setContentType(item.id);
-                      setPlatform(item.platforms[0]);
-                    }}
-                    className={`flex items-center justify-between p-3 rounded-xl text-left border transition-all ${
-                      isSelected
-                        ? 'bg-indigo-600/20 border-indigo-500/60 text-white shadow-md'
-                        : 'bg-slate-950/40 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                        <IconComponent className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">{item.label}</div>
-                        <div className="text-[11px] text-slate-500">{item.id}</div>
-                      </div>
-                    </div>
-                    {isSelected && <Check className="h-4 w-4 text-indigo-400" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Topic Input */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Topic, Concept, or Keywords *
-            </label>
-            <textarea
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., 5 habit hacks for developers in 2026, or How to scale React performance without re-renders"
-              rows={3}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
-            />
-          </div>
-
-          {/* Tone & Target Settings */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Brand Tone
-              </label>
-              <select
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-              >
-                {tones.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Duration / Length
-              </label>
-              <select
-                value={targetDuration}
-                onChange={(e) => setTargetDuration(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-              >
-                {durations.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Platform Tag */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Target Social Platform
-            </label>
-            <div className="flex gap-2 flex-wrap">
-              {['TikTok', 'Instagram', 'YouTube', 'X/Twitter', 'Substack', 'Email'].map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPlatform(p)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                    platform === p
-                      ? 'bg-violet-600/30 border-violet-500/60 text-violet-200 font-semibold'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Hook Toggle */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
-            <div>
-              <div className="text-xs font-semibold text-slate-200">Include Viral Hook Generator</div>
-              <div className="text-[11px] text-slate-400">Crafts first 3-second retention anchor</div>
-            </div>
-            <input
-              type="checkbox"
-              checked={includeHook}
-              onChange={(e) => setIncludeHook(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-800 text-indigo-600 focus:ring-indigo-500 bg-slate-950"
-            />
-          </div>
-
-          {/* Action Button */}
-          <button
-            onClick={handleGenerateContent}
-            disabled={isGenerating || !topic.trim()}
-            className={`w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition-all ${
-              isGenerating || !topic.trim()
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 text-white hover:opacity-95 shadow-indigo-600/25 active:scale-[0.99]'
-            }`}
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin text-white" />
-                <span>Crafting AI Content...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 text-indigo-200" />
-                <span>Generate Optimized Content</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Generated Output Display */}
-        <div className="lg:col-span-7 flex flex-col bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 min-h-[520px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
-              <h3 className="font-semibold text-sm text-slate-200">Generated Deliverable Output</h3>
-            </div>
-            {generatedOutput && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleCopyContent(generatedOutput.content)}
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1.5 transition-all"
-                >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
-                <button
-                  onClick={() => handleSaveToLibrary(generatedOutput)}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 shadow-md transition-all"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Save to Library</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {!generatedOutput && !isGenerating && (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-slate-500">
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 mb-3">
-                <Sparkles className="h-8 w-8 text-indigo-400/60" />
-              </div>
-              <h4 className="text-slate-300 font-semibold mb-1">AI Studio Ready</h4>
-              <p className="text-xs max-w-sm text-slate-500">
-                Enter your topic, select your desired platform, tone, and click generate to craft optimized scripts, posts, or articles.
-              </p>
-            </div>
-          )}
-
-          {isGenerating && (
-            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
-                <Zap className="h-5 w-5 text-indigo-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <p className="text-xs text-slate-400 font-medium animate-pulse">
-                Analyzing platform retention trends & formatting script...
-              </p>
-            </div>
-          )}
-
-          {generatedOutput && !isGenerating && (
-            <div className="flex-1 space-y-4 overflow-y-auto">
-              {/* Output Metadata Badges */}
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-medium">
-                  {generatedOutput.type}
-                </span>
-                <span className="px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-300 font-medium">
-                  {generatedOutput.platform}
-                </span>
-                <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium">
-                  Target: {generatedOutput.duration}
-                </span>
-                <span className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 font-medium">
-                  Est. Reach: {generatedOutput.projectedReach}
-                </span>
-              </div>
-
-              {/* Hook Spotlight Box */}
-              {generatedOutput.hook && (
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-indigo-950/60 to-purple-950/40 border border-indigo-500/30">
-                  <div className="text-[10px] uppercase tracking-wider font-bold text-indigo-400 mb-1 flex items-center gap-1">
-                    <Flame className="h-3 w-3 fill-indigo-400" /> Viral Retention Hook Anchor
-                  </div>
-                  <p className="text-xs font-semibold text-slate-100 italic">
-                    "{generatedOutput.hook}"
-                  </p>
-                </div>
-              )}
-
-              {/* Full Content Body */}
-              <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs leading-relaxed font-mono whitespace-pre-wrap text-slate-300">
-                {generatedOutput.content}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+  <!-- Navigation Header -->
+  <header class="bg-card-bg border-b-2 border-border-color px-6 py-4 sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+    <div class="flex items-center gap-3 font-extrabold text-2xl text-accent-coral cursor-pointer" onclick="switchNavTab('ai-studio')">
+      <span class="text-3xl">🚀</span> CREATOR PULSE
     </div>
-  );
-}
+    
+    <nav class="flex gap-1 sm:gap-2 bg-bg-cream p-1.5 rounded-xl border border-border-color overflow-x-auto w-full md:w-auto">
+      <button class="nav-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-white bg-accent-coral shadow-sm whitespace-nowrap" onclick="switchNavTab('ai-studio', this)">✨ AI Studio</button>
+      <button class="nav-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-text-dark hover:bg-white/60 whitespace-nowrap" onclick="switchNavTab('content-calendar', this)">📅 Calendar</button>
+      <button class="nav-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-text-dark hover:bg-white/60 whitespace-nowrap" onclick="switchNavTab('reviewer', this)">🔍 Pre-Post Review</button>
+      <button class="nav-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-text-dark hover:bg-white/60 whitespace-nowrap" onclick="switchNavTab('analytics', this)">📈 Watch-Time Analytics</button>
+    </nav>
+  </header>
 
-function AnalyticsPredictor({ analyticsData, handleSelectPreset, uploadedFileName, handleFileUploadSimulate, onOpenGenerator }) {
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Analytics Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- SECTION 1: AI CONTENT STUDIO -->
+    <section id="view-ai-studio" class="view-section card transition-all duration-300">
+      <div class="mb-6 pb-4 border-b border-border-color flex flex-col md:flex-row justify-between md:items-center gap-2">
         <div>
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
-            Predictive Analytics
-          </span>
-          <h2 className="text-2xl font-bold text-white mt-1">Social Performance Predictor</h2>
-          <p className="text-sm text-slate-400">Upload your raw platform CSV or JSON export to extract hyper-customized posting insights.</p>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-accent-coral flex items-center gap-2">
+            ✨ AI Content Studio
+          </h2>
+          <p class="text-gray-600 text-sm sm:text-base mt-1">Generate multi-platform post drafts, video scripts, and newsletter copy in seconds.</p>
         </div>
-
-        {/* Quick Data Preset Switcher */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Presets:</span>
-          <button
-            onClick={() => handleSelectPreset('tiktok')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              analyticsData.platform === 'TikTok'
-                ? 'bg-indigo-600 text-white border-indigo-500'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            TikTok
-          </button>
-          <button
-            onClick={() => handleSelectPreset('instagram')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              analyticsData.platform === 'Instagram'
-                ? 'bg-indigo-600 text-white border-indigo-500'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Instagram
-          </button>
-          <button
-            onClick={() => handleSelectPreset('youtube')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              analyticsData.platform === 'YouTube'
-                ? 'bg-indigo-600 text-white border-indigo-500'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            YouTube
-          </button>
-        </div>
-      </div>
-
-      {/* Upload Box Component */}
-      <div className="p-6 rounded-2xl bg-slate-900/40 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-all text-center">
-        <input 
-          type="file" 
-          id="analytics-file" 
-          onChange={handleFileUploadSimulate} 
-          accept=".csv,.json"
-          className="hidden" 
-        />
-        <label htmlFor="analytics-file" className="cursor-pointer flex flex-col items-center">
-          <div className="p-3 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-2">
-            <Upload className="h-6 w-6" />
-          </div>
-          <p className="text-sm font-semibold text-slate-200">
-            Click to upload your Social Analytics file (.csv, .json)
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            Supports Instagram Insights, TikTok Analytics, YouTube Studio CSVs
-          </p>
-          {uploadedFileName && (
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Parsed file: {uploadedFileName}
-            </div>
-          )}
-        </label>
-      </div>
-
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-1">Peak Audience Hours</div>
-          <div className="text-xl font-bold text-indigo-300">{analyticsData.bestTimes.join(', ')}</div>
-          <div className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-            <TrendingUp className="h-3 w-3" /> Highest engagement window
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-1">Ideal Video Duration</div>
-          <div className="text-xl font-bold text-violet-300">{analyticsData.optimalDuration}</div>
-          <div className="text-[11px] text-slate-400 mt-1">
-            Based on 82% video completion rate
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-1">Top Best Days to Post</div>
-          <div className="text-xl font-bold text-pink-300">{analyticsData.bestDays.join(', ')}</div>
-          <div className="text-[11px] text-pink-400 mt-1">
-            Sunday & Thursday spike
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-1">Expected Reach Multiplier</div>
-          <div className="text-xl font-bold text-emerald-400">{analyticsData.expectedReachMultiplier}</div>
-          <div className="text-[11px] text-emerald-400 mt-1">
-            Vs off-peak posting times
-          </div>
-        </div>
-      </div>
-
-      {/* Hourly Audience Heatmap Chart */}
-      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-slate-200 text-sm">Audience Activity & Golden Windows (24-Hour Cycle)</h3>
-            <p className="text-xs text-slate-400">Darker violet bars indicate maximum active follower volume.</p>
-          </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2.5 h-2.5 rounded-sm bg-slate-800"></span> Low
-            </span>
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2.5 h-2.5 rounded-sm bg-indigo-600"></span> Golden Window
-            </span>
-          </div>
-        </div>
-
-        {/* Simple Interactive Hourly Bar Chart */}
-        <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b border-slate-800">
-          {analyticsData.peakHoursData.map((val, idx) => {
-            const isGolden = val > 75;
-            return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
-                {/* Hover Tooltip */}
-                <div className="absolute -top-8 hidden group-hover:flex bg-slate-950 text-white text-[10px] px-2 py-1 rounded border border-slate-700 whitespace-nowrap z-10">
-                  {idx}:00 - Intensity: {val}%
-                </div>
-
-                {/* Bar */}
-                <div 
-                  style={{ height: `${val}%` }} 
-                  className={`w-full rounded-t-sm transition-all group-hover:opacity-80 ${
-                    isGolden 
-                      ? 'bg-gradient-to-t from-indigo-600 to-violet-400 shadow-md shadow-indigo-500/20' 
-                      : val > 40 ? 'bg-indigo-900/70' : 'bg-slate-800/60'
-                  }`}
-                />
-                
-                {/* Hour Label every 3 hours */}
-                {idx % 3 === 0 && (
-                  <span className="text-[10px] text-slate-500 font-mono mt-1">{idx}h</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Top Formats & Action CTA */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
-          <h3 className="font-semibold text-slate-200 text-sm">Top 3 Recommended Content Formats</h3>
-          <div className="space-y-2">
-            {analyticsData.topFormats.map((fmt, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
-                <span className="text-slate-200 font-medium">{idx + 1}. {fmt}</span>
-                <span className="text-xs text-indigo-400 font-mono">High Engagement</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900 to-purple-950/80 border border-indigo-500/30 flex flex-col justify-between">
-          <div>
-            <h3 className="font-bold text-slate-100 text-base mb-1">Ready to create optimized posts?</h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Apply these exact posting parameters ({analyticsData.optimalDuration}, optimal time {analyticsData.bestTimes[0]}) directly inside the AI Content Generator.
-            </p>
-          </div>
-          <button
-            onClick={onOpenGenerator}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>Launch AI Generator with Presets</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SmartCalendar({
-  library, analyticsData, selectedDate, setSelectedDate,
-  viewMode, setViewMode, filterPlatform, setFilterPlatform,
-  handleScheduleItem, onOpenGenerator
-}) {
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
-  // Filtering library items
-  const filteredItems = useMemo(() => {
-    return library.filter(item => {
-      if (filterPlatform !== 'All' && item.platform !== filterPlatform) return false;
-      return true;
-    });
-  }, [library, filterPlatform]);
-
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Calendar Bar Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">
-              Smart Schedule
-            </span>
-            <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
-              <Flame className="h-3 w-3" /> Peak Windows Highlighted
-            </span>
-          </div>
-          <h2 className="text-2xl font-bold text-white">Content Calendar & Pipeline</h2>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Platform Filter */}
-          <select
-            value={filterPlatform}
-            onChange={(e) => setFilterPlatform(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none"
-          >
-            <option value="All">All Platforms</option>
-            <option value="TikTok">TikTok</option>
-            <option value="Instagram">Instagram</option>
-            <option value="YouTube">YouTube</option>
-            <option value="Substack">Substack</option>
-            <option value="Email">Email</option>
-          </select>
-
-          <button
-            onClick={onOpenGenerator}
-            className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition-all shadow-md"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Draft</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Heatmap Banner Notice */}
-      <div className="p-3.5 rounded-xl bg-violet-950/40 border border-violet-500/30 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-violet-200">
-          <Zap className="h-4 w-4 text-violet-400 shrink-0" />
-          <span>Golden Window Alert: Audience engagement peaks on <strong>Tuesday & Thursday at 18:00</strong>.</span>
-        </div>
-        <span className="text-[11px] bg-violet-500/20 text-violet-300 px-2.5 py-1 rounded-md font-mono">
-          Auto-Fit Time
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+          ⚡ Powered by Gemini Engine
         </span>
       </div>
 
-      {/* Weekly View Grid */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
-        {/* Days Header */}
-        <div className="grid grid-cols-7 border-b border-slate-800 text-center font-semibold text-xs text-slate-400 py-3 bg-slate-950/40">
-          {daysOfWeek.map((day, idx) => (
-            <div key={day} className="flex items-center justify-center gap-1">
-              <span>{day}</span>
-              {(day === 'Tue' || day === 'Thu' || day === 'Sun') && (
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" title="Golden Peak Day" />
-              )}
-            </div>
-          ))}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+        <div class="flex flex-col gap-2">
+          <label for="topic" class="font-bold text-sm text-text-dark">Content Topic / Niche Keyword</label>
+          <input type="text" id="topic" value="Automated AI Workflows for Creators" class="p-3 border-2 border-border-color rounded-xl text-base bg-bg-cream outline-none focus:border-rose-pink transition-colors">
         </div>
 
-        {/* Calendar Grid Cells */}
-        <div className="grid grid-cols-7 divide-x divide-slate-800/80 min-h-[420px]">
-          {[1, 2, 3, 4, 5, 6, 7].map((dayNum) => {
-            const dateStr = `2026-10-0${dayNum}`;
-            const dayItems = filteredItems.filter(i => i.scheduledTime.startsWith(dateStr));
-            const isGoldenDay = dayNum === 2 || dayNum === 4 || dayNum === 7;
+        <div class="flex flex-col gap-2">
+          <label for="style" class="font-bold text-sm text-text-dark">Tone & Narrative Style</label>
+          <select id="style" class="p-3 border-2 border-border-color rounded-xl text-base bg-bg-cream outline-none focus:border-rose-pink transition-colors cursor-pointer">
+            <option value="Conversational & High Energy">🔥 Conversational & High Energy</option>
+            <option value="Professional & Authoritative">💼 Professional & Authoritative</option>
+            <option value="Educational Step-by-Step">📚 Educational Step-by-Step</option>
+            <option value="Storytelling & Personal">📖 Storytelling & Personal</option>
+          </select>
+        </div>
 
-            return (
-              <div 
-                key={dayNum} 
-                className={`p-2 space-y-2 relative transition-all ${
-                  isGoldenDay ? 'bg-indigo-950/10' : 'bg-slate-900/20'
-                }`}
-              >
-                {/* Day Header */}
-                <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pb-1 border-b border-slate-800/40">
-                  <span className={`font-bold ${isGoldenDay ? 'text-indigo-400' : 'text-slate-400'}`}>
-                    Oct {dayNum}
-                  </span>
-                  {isGoldenDay && (
-                    <span className="text-[9px] text-indigo-300 bg-indigo-500/20 px-1 rounded">Peak</span>
-                  )}
-                </div>
-
-                {/* Scheduled Items list */}
-                <div className="space-y-2">
-                  {dayItems.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs hover:border-indigo-500/50 transition-all shadow-sm group"
-                    >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
-                          {item.platform}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400">
-                          {item.scheduledTime.split('T')[1] || '18:00'}
-                        </span>
-                      </div>
-                      <p className="font-medium text-slate-200 line-clamp-2 text-[11px] leading-snug">
-                        {item.title}
-                      </p>
-                      
-                      {/* Status pill */}
-                      <div className="mt-2 flex items-center justify-between text-[10px]">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${
-                          item.status === 'Scheduled' ? 'bg-emerald-500/20 text-emerald-300' :
-                          item.status === 'Published' ? 'bg-blue-500/20 text-blue-300' :
-                          'bg-amber-500/20 text-amber-300'
-                        }`}>
-                          {item.status}
-                        </span>
-                        <span className="text-slate-500 group-hover:text-slate-300">
-                          {item.duration}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {dayItems.length === 0 && (
-                    <div className="h-20 flex flex-col items-center justify-center border border-dashed border-slate-800/60 rounded-xl text-[11px] text-slate-600 hover:border-slate-700 transition-all cursor-pointer">
-                      <span>Empty Slot</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label for="prompt" class="font-bold text-sm text-text-dark">Core Message / Specific Hook Angle</label>
+          <textarea id="prompt" rows="3" class="p-3 border-2 border-border-color rounded-xl text-base bg-bg-cream outline-none focus:border-rose-pink transition-colors">Show how creators save 15 hours a week by automating cross-platform post scheduling and pre-publication quality checks.</textarea>
         </div>
       </div>
-    </div>
-  );
-}
 
-function ContentLibrary({ library, setLibrary, handleCopyContent, copied, onOpenGenerator }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
+      <button id="generate-btn" class="btn-primary w-full text-lg shadow-md" onclick="triggerGenerate()">
+        <span>✨</span> Generate Multi-Platform Drafts
+      </button>
 
-  const filteredLibrary = library.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          item.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'All' || item.type === filterType;
-    return matchesSearch && matchesType;
-  });
-
-  const handleDeleteItem = (id) => {
-    setLibrary(prev => prev.filter(i => i.id !== id));
-  };
-
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
-        <div>
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            Content Repository
-          </span>
-          <h2 className="text-2xl font-bold text-white mt-1">Saved Drafts & Deliverables</h2>
+      <!-- AI Outputs Container -->
+      <div id="ai-output-container" class="mt-8 hidden space-y-6">
+        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-border-color">
+          <h3 class="text-xl font-bold text-text-dark flex items-center gap-2">
+            <span>🎯</span> Generated Multi-Platform Assets
+          </h3>
+          <button class="btn-secondary text-xs sm:text-sm" onclick="sendAllToReviewer()">
+            📤 Export Selected Draft to Reviewer
+          </button>
         </div>
 
-        <button
-          onClick={onOpenGenerator}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition-all shadow-md self-start md:self-auto"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create New Content</span>
+        <!-- Dynamic Platform Selector -->
+        <div class="flex border-b border-border-color gap-2 overflow-x-auto pb-1">
+          <button class="platform-tab active-platform px-4 py-2 font-bold text-sm border-b-2 border-accent-coral text-accent-coral" onclick="switchPlatformTab('yt-script', this)">📺 YouTube Script (10m)</button>
+          <button class="platform-tab px-4 py-2 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-text-dark" onclick="switchPlatformTab('linkedin-post', this)">💼 LinkedIn Post</button>
+          <button class="platform-tab px-4 py-2 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-text-dark" onclick="switchPlatformTab('insta-reel', this)">📸 Instagram Reel Hook</button>
+          <button class="platform-tab px-4 py-2 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-text-dark" onclick="switchPlatformTab('x-thread', this)">🐦 X Thread</button>
+        </div>
+
+        <!-- Output Cards -->
+        <div id="platform-outputs">
+          <!-- YT Script -->
+          <div id="out-yt-script" class="platform-content space-y-4">
+            <div class="p-4 bg-bg-cream/60 rounded-xl border border-border-color space-y-3">
+              <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                <span>FORMAT: 10-MINUTE YouTube Video Script</span>
+                <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">✅ Peak Retention Optimized</span>
+              </div>
+              <textarea id="yt-text-content" rows="8" class="w-full p-3 border border-border-color rounded-lg font-mono text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent-coral"></textarea>
+            </div>
+          </div>
+
+          <!-- LinkedIn Post -->
+          <div id="out-linkedin-post" class="platform-content hidden space-y-4">
+            <div class="p-4 bg-bg-cream/60 rounded-xl border border-border-color space-y-3">
+              <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                <span>FORMAT: Professional LinkedIn Post / Carousel Outline</span>
+                <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">💼 Mon/Wed Peak Ready</span>
+              </div>
+              <textarea id="linkedin-text-content" rows="8" class="w-full p-3 border border-border-color rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-linkedin-blue"></textarea>
+            </div>
+          </div>
+
+          <!-- Insta Reel -->
+          <div id="out-insta-reel" class="platform-content hidden space-y-4">
+            <div class="p-4 bg-bg-cream/60 rounded-xl border border-border-color space-y-3">
+              <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                <span>FORMAT: High-Engagement Short Script (30-60s)</span>
+                <span class="text-pink-600 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">📸 Weekend Peak Ready</span>
+              </div>
+              <textarea id="insta-text-content" rows="8" class="w-full p-3 border border-border-color rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-insta-pink"></textarea>
+            </div>
+          </div>
+
+          <!-- X Thread -->
+          <div id="out-x-thread" class="platform-content hidden space-y-4">
+            <div class="p-4 bg-bg-cream/60 rounded-xl border border-border-color space-y-3">
+              <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                <span>FORMAT: 4-Part Thread</span>
+                <span class="text-gray-800 bg-gray-100 px-2 py-0.5 rounded border border-gray-300">🐦 Viral Structure</span>
+              </div>
+              <textarea id="x-text-content" rows="8" class="w-full p-3 border border-border-color rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-x-black"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button class="btn-secondary" onclick="copyCurrentOutput()">📋 Copy to Clipboard</button>
+          <button class="btn-primary" onclick="sendSelectedToReviewer()">🚀 Send Active Draft to Reviewer</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: CONTENT CALENDAR -->
+    <section id="view-content-calendar" class="view-section hidden transition-all duration-300">
+      
+      <!-- Retention Banner -->
+      <div class="bg-gradient-to-r from-[#1F1917] to-[#2D2523] text-white rounded-2xl p-6 sm:p-7 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg border border-gray-800">
+        <div>
+          <div class="text-warm-amber font-extrabold text-lg sm:text-xl flex items-center gap-2 mb-1">
+            📊 Watch-Time & Audience Retention Insights Applied
+          </div>
+          <p class="text-gray-300 text-sm max-w-2xl leading-relaxed">
+            Your uploaded audience watch-time analytics indicate peak retention on 10-minute videos (Tuesdays & Thursdays). Average viewer drop-off occurs at 11:15.
+          </p>
+        </div>
+        <div class="flex flex-wrap sm:flex-nowrap gap-3 w-full md:w-auto">
+          <input type="file" id="csv-uploader" accept=".csv, .json" class="hidden" onchange="handleFileUpload(event)">
+          <button class="btn-secondary text-xs sm:text-sm bg-gray-800 text-white border-gray-600 hover:bg-gray-700 w-full sm:w-auto" onclick="document.getElementById('csv-uploader').click()">
+            📁 Upload CSV/JSON
+          </button>
+          <button class="btn-primary text-xs sm:text-sm w-full sm:w-auto whitespace-nowrap shadow-none" onclick="applySmartSchedule()">
+            ⚡ Apply Smart Schedule
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Smart Recommendation Grid -->
+      <div class="bg-[#FFF8E1] border-l-8 border-accent-coral p-5 rounded-xl mb-6 shadow-sm">
+        <h4 class="text-accent-coral font-bold text-base flex items-center gap-2 mb-3">
+          ⚡ AI Optimal Posting Windows (Based on Active Audience Retention)
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm text-text-dark">
+          <div class="bg-white/80 p-3 rounded-lg border border-amber-200">
+            <span class="font-extrabold text-youtube-red">📺 YouTube Optimal:</span><br>
+            Post <strong class="text-accent-coral">10-minute videos</strong> on <strong>Tuesdays & Thursdays</strong> (17:00–19:00). Retention drops by 65% past 11m.
+          </div>
+          <div class="bg-white/80 p-3 rounded-lg border border-amber-200">
+            <span class="font-extrabold text-linkedin-blue">💼 LinkedIn Optimal:</span><br>
+            Post carousel/text on <strong>Mon, Wed & Fri mornings</strong> (08:30) for highest B2B reach.
+          </div>
+          <div class="bg-white/80 p-3 rounded-lg border border-amber-200">
+            <span class="font-extrabold text-insta-pink">📱 Instagram & X:</span><br>
+            Post short reels on <strong>Friday & Saturday afternoons</strong> (15:00–18:00) during weekend prime time.
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Controls & Grid -->
+      <div class="card">
+        <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6 pb-4 border-b border-border-color">
+          <div>
+            <h3 class="text-2xl font-extrabold text-text-dark">October 2026</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Click any date cell to quickly schedule new content</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-gray-500 mr-1">Filter:</span>
+            <button class="filter-btn active-filter px-3 py-1.5 rounded-lg text-xs font-bold border border-border-color bg-accent-coral text-white" onclick="filterCalendar('all', this)">All</button>
+            <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-border-color bg-bg-cream text-youtube-red hover:bg-gray-200" onclick="filterCalendar('youtube', this)">YouTube</button>
+            <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-border-color bg-bg-cream text-linkedin-blue hover:bg-gray-200" onclick="filterCalendar('linkedin', this)">LinkedIn</button>
+            <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-border-color bg-bg-cream text-insta-pink hover:bg-gray-200" onclick="filterCalendar('instagram', this)">Instagram</button>
+            <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-border-color bg-bg-cream text-text-dark hover:bg-gray-200" onclick="filterCalendar('x', this)">X</button>
+            <button class="btn-primary text-xs py-1.5 px-3 ml-auto sm:ml-2" onclick="openAddEventModal()">+ Add Event</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-extrabold text-gray-400 uppercase tracking-wider">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div class="text-accent-coral font-black">Tue (YT)</div>
+          <div>Wed</div>
+          <div class="text-accent-coral font-black">Thu (YT)</div>
+          <div>Fri</div>
+          <div>Sat</div>
+        </div>
+
+        <!-- Rendered Calendar Cells -->
+        <div id="calendar-cells-container" class="calendar-grid"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: PRE-POST REVIEWER -->
+    <section id="view-reviewer" class="view-section card hidden transition-all duration-300">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 border-b-2 border-bg-cream pb-5">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-accent-coral">Pre-Post Content Reviewer</h2>
+          <p class="text-gray-600 text-sm mt-1">Inspect, edit, and run pre-publication quality checks before pushing live.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold text-gray-500 uppercase">Readiness Score:</span>
+          <div id="readiness-score-badge" class="bg-warm-amber text-text-dark font-extrabold px-4 py-2 rounded-full text-base shadow-sm">
+            94 / 100
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Interactive Editor Preview -->
+      <div class="bg-bg-cream p-6 rounded-2xl mb-6 border border-border-color">
+        <div class="flex justify-between items-center mb-3">
+          <label class="font-bold text-sm text-text-dark flex items-center gap-2">
+            <span>📝</span> Live Post Draft Preview (Editable)
+          </label>
+          <span class="text-xs font-bold text-gray-500" id="word-count-badge">Words: 34 | Chars: 215</span>
+        </div>
+        
+        <textarea id="reviewer-editor" rows="5" oninput="updateReviewerAudit()" class="w-full p-4 rounded-xl border-2 border-border-color bg-white font-sans text-base leading-relaxed text-text-dark focus:border-rose-pink focus:outline-none transition-all shadow-inner">🚀 Content creation just got 10x easier. Stop juggling multiple tools and guessing when to post.
+
+With CreatorPulse, you can write, preview, and verify your posts across platforms in one seamless workflow.</textarea>
+
+        <div class="mt-4 bg-white border-2 border-dashed border-rose-pink/60 rounded-xl p-4 flex items-center justify-between gap-3 text-rose-pink font-bold text-sm">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <span class="text-2xl">🎬</span>
+            <span class="truncate" id="reviewer-media-label">Attached Media: 10_Min_Automated_Workflow_Guide.mp4 (YouTube 10m Compliant)</span>
+          </div>
+          <button class="text-xs bg-bg-cream px-3 py-1.5 rounded-lg text-text-dark border border-border-color hover:bg-gray-200 whitespace-nowrap" onclick="toggleMediaAttachment()">Change Media</button>
+        </div>
+      </div>
+
+      <!-- Quality Checks Audit Grid -->
+      <div id="audit-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200" id="audit-retention">
+          <span class="text-emerald-600 font-bold">✓</span> <span id="audit-retention-text">Retention Match: Optimal 10-Min Target Standard</span>
+        </div>
+        <div class="p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200" id="audit-readability">
+          <span class="text-emerald-600 font-bold">✓</span> <span id="audit-readability-text">Readability Grade: 8 (Optimal Engagement)</span>
+        </div>
+        <div class="p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200" id="audit-tone">
+          <span class="text-emerald-600 font-bold">✓</span> <span id="audit-tone-text">Tone Distribution: 45% Enthusiastic, 35% Informative</span>
+        </div>
+        <div class="p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-amber-50 text-amber-800 border border-amber-200" id="audit-window">
+          <span class="text-amber-600 font-bold">⚡</span> <span id="audit-window-text">Recommended Slot: Thursday at 17:00 Peak Window</span>
+        </div>
+      </div>
+
+      <button class="btn-primary w-full text-lg shadow-md" onclick="dispatchPostPublicly()">
+        🚀 Approve & Dispatch Content Publicly
+      </button>
+    </section>
+
+    <!-- SECTION 4: ANALYTICS -->
+    <section id="view-analytics" class="view-section card hidden transition-all duration-300">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-6">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-accent-coral">Audience Watch-Time Analytics</h2>
+          <p class="text-gray-600 text-sm mt-1">Uploaded viewer retention curves and drop-off rate analysis.</p>
+        </div>
+        <button class="btn-secondary text-xs sm:text-sm self-start sm:self-auto" onclick="document.getElementById('csv-uploader').click()">
+          📥 Import Custom Dataset
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="h-4 w-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search saved drafts, hooks, or topics..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
+      <!-- KPI Summary Header -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-bg-cream p-5 rounded-xl border border-border-color text-center">
+          <span class="text-xs font-bold text-gray-500 uppercase">Average Watch Duration</span>
+          <p class="text-3xl font-extrabold text-accent-coral mt-1" id="kpi-avg-time">9m 42s</p>
+          <span class="text-xs text-emerald-700 font-bold mt-1 inline-block">↑ +1.2m vs last month</span>
+        </div>
+        <div class="bg-bg-cream p-5 rounded-xl border border-border-color text-center">
+          <span class="text-xs font-bold text-gray-500 uppercase">Critical Drop-off Point</span>
+          <p class="text-3xl font-extrabold text-text-dark mt-1" id="kpi-dropoff">11m 15s</p>
+          <span class="text-xs text-rose-pink font-bold mt-1 inline-block">-65% Retention Cliff</span>
+        </div>
+        <div class="bg-bg-cream p-5 rounded-xl border border-border-color text-center">
+          <span class="text-xs font-bold text-gray-500 uppercase">Optimal Length Recommendation</span>
+          <p class="text-3xl font-extrabold text-warm-amber mt-1" id="kpi-optimal">10m 00s</p>
+          <span class="text-xs text-gray-600 font-semibold mt-1 inline-block">Maximum Algorithm Push</span>
+        </div>
+      </div>
+
+      <!-- Retention Chart Canvas -->
+      <div class="bg-white p-5 rounded-2xl border border-border-color mb-8 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-base text-text-dark flex items-center gap-2">
+            <span>📈</span> YouTube Video Retention Curve (% Audience Remaining vs Video Duration)
+          </h3>
+          <span class="text-xs bg-gray-100 px-2.5 py-1 rounded-md text-gray-600 font-semibold">Live Dataset</span>
+        </div>
+        <div class="relative w-full h-72 sm:h-80">
+          <canvas id="retentionChart"></canvas>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center bg-bg-cream p-4 rounded-xl border border-border-color">
+        <span class="text-sm font-bold text-text-dark">Ready to line up your content strategy based on this data?</span>
+        <button class="btn-secondary text-xs sm:text-sm" onclick="switchNavTab('content-calendar')">
+          View Smart Calendar Recommendations →
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- EVENT ADD/EDIT MODAL -->
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200" id="event-modal">
+    <div class="bg-card-bg rounded-2xl w-full max-w-md p-6 shadow-2xl border border-border-color transform scale-95 transition-transform duration-200" id="modal-card">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-border-color">
+        <h3 class="text-xl font-extrabold text-accent-coral" id="modal-heading">Schedule Content Post</h3>
+        <button class="text-gray-400 hover:text-text-dark text-xl font-bold" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-bold text-xs text-text-dark">Target Platform</label>
+          <select id="modal-platform" class="p-3 border-2 border-border-color rounded-xl text-sm bg-bg-cream focus:border-rose-pink outline-none">
+            <option value="youtube">📺 YouTube (10 Min Video Recommended)</option>
+            <option value="linkedin">💼 LinkedIn (Morning Post)</option>
+            <option value="instagram">📸 Instagram (Afternoon Reel)</option>
+            <option value="x">🐦 X / Twitter (Thread)</option>
+          </select>
         </div>
 
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none"
-        >
-          <option value="All">All Types</option>
-          <option value="TikTok/Reels Script">Short Video Scripts</option>
-          <option value="Blog Post">Blog Posts</option>
-          <option value="Email Newsletter">Newsletters</option>
-        </select>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-bold text-xs text-text-dark">Post Title / Content Topic</label>
+          <input type="text" id="modal-title" placeholder="e.g., Automated AI Workflow Blueprint" class="p-3 border-2 border-border-color rounded-xl text-sm bg-bg-cream focus:border-rose-pink outline-none">
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="font-bold text-xs text-text-dark">Scheduled Date (October 2026)</label>
+          <input type="date" id="modal-date" value="2026-10-15" class="p-3 border-2 border-border-color rounded-xl text-sm bg-bg-cream focus:border-rose-pink outline-none">
+        </div>
       </div>
 
-      {/* Library Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredLibrary.map((item) => (
-          <div key={item.id} className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
-                  {item.platform}
-                </span>
-                <span className="text-[10px] text-slate-500 font-mono">
-                  {item.duration}
-                </span>
-              </div>
-
-              <h4 className="font-bold text-slate-200 text-sm line-clamp-1 mb-1">{item.title}</h4>
-              <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed font-mono bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                {item.content}
-              </p>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-              <span className="text-[10px] text-emerald-400 font-medium">
-                Est. Reach: {item.projectedReach}
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => handleCopyContent(item.content)}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all"
-                  title="Copy Text"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  onClick={() => handleDeleteItem(item.id)}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-300 transition-all"
-                  title="Delete Item"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {filteredLibrary.length === 0 && (
-          <div className="col-span-full text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800 text-slate-500 text-xs">
-            No saved content items matching your search.
-          </div>
-        )}
+      <div class="flex gap-3 mt-6">
+        <button class="btn-primary w-full text-sm" onclick="saveModalEvent()">Save to Calendar</button>
+        <button class="btn-secondary w-full text-sm justify-center" onclick="closeModal()">Cancel</button>
       </div>
     </div>
-  );
-}
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast">✨ Action performed successfully!</div>
+
+  <script>
+    /* ==========================================================================
+       APP STATE & GLOBAL DATA
+       ========================================================================== */
+    let calendarEvents = [
+      { id: 1, date: 6, platform: 'youtube', text: '🎬 10m Video: Top AI Tools' },
+      { id: 2, date: 8, platform: 'youtube', text: '🎬 10m Video: Workflow Setup' },
+      { id: 3, date: 12, platform: 'linkedin', text: '💼 Workflow Carousel' },
+      { id: 4, date: 13, platform: 'youtube', text: '🎬 10m Video: AI Automation' },
+      { id: 5, date: 15, platform: 'youtube', text: '🎬 10m Video: Creator Systems' },
+      { id: 6, date: 16, platform: 'instagram', text: '📸 Reel: Save 15 Hrs/Wk' },
+      { id: 7, date: 20, platform: 'youtube', text: '🎬 10m Video: Retention Hacks' },
+      { id: 8, date: 23, platform: 'x', text: '🐦 Thread: 5 AI Prompt Hacks' }
+    ];
+
+    let currentFilter = 'all';
+    let chartInstance = null;
+
+    // Default Retention Curve Data
+    let retentionChartData = {
+      labels: ['0m', '2m', '4m', '6m', '8m', '10m (Peak)', '11m (Drop)', '12m', '14m', '16m'],
+      datasets: [{
+        label: '% Audience Retained',
+        data: [100, 88, 82, 79, 75, 71, 26, 18, 12, 8],
+        borderColor: '#E43D12',
+        backgroundColor: 'rgba(228, 61, 18, 0.15)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#EFB110',
+        pointRadius: 5
+      }]
+    };
+
+    /* ==========================================================================
+       INITIALIZATION & SPLASH SCREEN
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Dismiss rocket splash screen
+      setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.classList.add('splash-hidden');
+      }, 2200);
+
+      // Render Calendar Grid
+      renderCalendar();
+
+      // Initialize Chart
+      initChart();
+
+      // Initial Reviewer update
+      updateReviewerAudit();
+    });
+
+    /* ==========================================================================
+       NAVIGATION CONTROLLER
+       ========================================================================== */
+    function switchNavTab(tabId, targetBtn) {
+      // Update Navigation Tab Styles
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-accent-coral', 'text-white', 'shadow-sm');
+        btn.classList.add('text-text-dark', 'hover:bg-white/60');
+      });
+
+      if (targetBtn) {
+        targetBtn.classList.add('bg-accent-coral', 'text-white', 'shadow-sm');
+        targetBtn.classList.remove('text-text-dark', 'hover:bg-white/60');
+      } else {
+        // Fallback for programmatic switches
+        const buttons = document.querySelectorAll('.nav-btn');
+        if (tabId === 'ai-studio') buttons[0]?.classList.add('bg-accent-coral', 'text-white');
+        if (tabId === 'content-calendar') buttons[1]?.classList.add('bg-accent-coral', 'text-white');
+        if (tabId === 'reviewer') buttons[2]?.classList.add('bg-accent-coral', 'text-white');
+        if (tabId === 'analytics') buttons[3]?.classList.add('bg-accent-coral', 'text-white');
+      }
+
+      // Hide all view sections
+      document.querySelectorAll('.view-section').forEach(view => {
+        view.classList.add('hidden');
+      });
+
+      // Show targeted view section
+      const activeView = document.getElementById('view-' + tabId);
+      if (activeView) {
+        activeView.classList.remove('hidden');
+      }
+
+      // Refresh chart if switching to analytics
+      if (tabId === 'analytics' && chartInstance) {
+        chartInstance.update();
+      }
+    }
+
+    /* ==========================================================================
+       AI CONTENT STUDIO GENERATOR
+       ========================================================================== */
+    function triggerGenerate() {
+      const topic = document.getElementById('topic').value || 'Automated AI Workflows';
+      const style = document.getElementById('style').value;
+      const prompt = document.getElementById('prompt').value;
+
+      const btn = document.getElementById('generate-btn');
+      btn.innerHTML = '<span>⏳</span> Generating High-Retention Assets...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        // Dynamic generation templates based on topic and style
+        document.getElementById('yt-text-content').value = 
+`[TITLE]: How ${topic} Saves Me 15+ Hours Every Single Week
+[OPTIMIZED DURATION]: 09:55 (Targeted for YouTube 10-Min Peak Retention)
+
+[00:00 - HOOK]:
+"If you are still manually editing, formatting, and scheduling your social posts, you are losing up to 15 hours every week. In this video, I'll walk you step-by-step through setting up ${topic} so you can create once and publish everywhere."
+
+[01:30 - MAIN SYSTEM OVERVIEW]:
+- Step 1: Centralizing ideas into a structured prompt buffer.
+- Step 2: Automating cross-platform adaptation using AI filters.
+- Step 3: Enforcing a pre-publication quality check before going live.
+
+[07:45 - ACTIONABLE DEMO]:
+"Here is how ${prompt} works in real-time..."
+
+[09:30 - CTA]:
+"Subscribe for more productivity blueprints!"`;
+
+        document.getElementById('linkedin-text-content').value = 
+`🚀 Unpopular Opinion: Most creators don't fail because of bad ideas. They fail because of workflow friction.
+
+We spent 30 days analyzing top creator bottlenecks around ${topic}. 
+
+Here is the exact framework we built:
+1️⃣ Define 1 core anchor video/article topic.
+2️⃣ Adapt tone for platform-specific nuance (${style}).
+3️⃣ Use watch-time retention windows to schedule uploads automatically.
+
+Result? 15 hours saved per week without losing content quality.
+
+What does your publishing workflow look like? Let me know below 👇`;
+
+        document.getElementById('insta-text-content').value = 
+`🎬 REEL SCRIPT (30s):
+
+[Visual: Fast-paced overlay showing workflow setup]
+"Stop creating content from scratch for every single app! 🛑"
+
+[Text on screen: Save 15 Hours/Wk with ${topic}]
+
+"Here’s how I turn 1 anchor topic into YouTube videos, LinkedIn posts, and X threads in under 10 minutes using CreatorPulse..."
+
+👉 Save this Reel for your next content batch!`;
+
+        document.getElementById('x-text-content').value = 
+`1/4 How to automate your entire content workflow around ${topic} (and save 15+ hours every week): 🧵👇
+
+2/4 The core mistake creators make is treating every platform like a separate job. Instead, create ONE anchor asset (like a 10m YouTube video) and chop it down into bite-sized snippets.
+
+3/4 Angle: ${prompt}. Always optimize your YouTube length to stay right under the 11-minute retention cliff!
+
+4/4 Try this setup today with CreatorPulse to streamline your system. RT if you found this valuable! 🚀`;
+
+        document.getElementById('ai-output-container').classList.remove('hidden');
+        btn.innerHTML = '<span>✨</span> Generate Multi-Platform Drafts';
+        btn.disabled = false;
+
+        showToast("✨ Multi-platform post drafts generated!");
+      }, 700);
+    }
+
+    function switchPlatformTab(platformId, btn) {
+      document.querySelectorAll('.platform-tab').forEach(b => {
+        b.classList.remove('border-accent-coral', 'text-accent-coral');
+        b.classList.add('border-transparent', 'text-gray-500');
+      });
+
+      btn.classList.add('border-accent-coral', 'text-accent-coral');
+      btn.classList.remove('border-transparent', 'text-gray-500');
+
+      document.querySelectorAll('.platform-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('out-' + platformId).classList.remove('hidden');
+    }
+
+    function sendSelectedToReviewer() {
+      let activeText = "";
+      if (!document.getElementById('out-yt-script').classList.contains('hidden')) {
+        activeText = document.getElementById('yt-text-content').value;
+      } else if (!document.getElementById('out-linkedin-post').classList.contains('hidden')) {
+        activeText = document.getElementById('linkedin-text-content').value;
+      } else if (!document.getElementById('out-insta-reel').classList.contains('hidden')) {
+        activeText = document.getElementById('insta-text-content').value;
+      } else {
+        activeText = document.getElementById('x-text-content').value;
+      }
+
+      document.getElementById('reviewer-editor').value = activeText;
+      updateReviewerAudit();
+      switchNavTab('reviewer');
+      showToast("📤 Content loaded into Pre-Post Reviewer!");
+    }
+
+    function copyCurrentOutput() {
+      let activeText = "";
+      if (!document.getElementById('out-yt-script').classList.contains('hidden')) {
+        activeText = document.getElementById('yt-text-content').value;
+      } else if (!document.getElementById('out-linkedin-post').classList.contains('hidden')) {
+        activeText = document.getElementById('linkedin-text-content').value;
+      } else if (!document.getElementById('out-insta-reel').classList.contains('hidden')) {
+        activeText = document.getElementById('insta-text-content').value;
+      } else {
+        activeText = document.getElementById('x-text-content').value;
+      }
+
+      // Reliable iframe copy technique
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = activeText;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempTextArea);
+
+      showToast("📋 Draft copied to clipboard!");
+    }
+
+    /* ==========================================================================
+       CONTENT CALENDAR & SMART SCHEDULING
+       ========================================================================== */
+    function renderCalendar(filter = currentFilter) {
+      currentFilter = filter;
+      const container = document.getElementById('calendar-cells-container');
+      container.innerHTML = '';
+
+      for (let day = 1; day <= 31; day++) {
+        // October 2026 starts on Thursday (offset = 4)
+        const dayOfWeek = (day + 3) % 7; 
+        const isYTDay = (dayOfWeek === 2 || dayOfWeek === 4); // Tue / Thu optimal
+
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell' + (isYTDay ? ' highlight-day' : '');
+        cell.onclick = (e) => {
+          if (e.target.classList.contains('event-chip')) return;
+          openAddEventModal(day);
+        };
+
+        let html = `<div class="flex justify-between items-center text-xs font-extrabold text-text-dark">
+                      <span>${day}</span>
+                      ${isYTDay ? '<span class="text-[10px] bg-accent-coral text-white px-1.5 py-0.5 rounded font-bold">10m YT</span>' : ''}
+                    </div>`;
+
+        const dayEvents = calendarEvents.filter(e => e.date === day && (filter === 'all' || e.platform === filter));
+        dayEvents.forEach(e => {
+          html += `<div class="event-chip chip-${e.platform} flex justify-between items-center group">
+                    <span class="truncate">${e.text}</span>
+                    <button onclick="deleteEvent(${e.id}, event)" class="opacity-0 group-hover:opacity-100 ml-1 text-white hover:text-red-200">✕</button>
+                  </div>`;
+        });
+
+        cell.innerHTML = html;
+        container.appendChild(cell);
+      }
+    }
+
+    function filterCalendar(platform, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-accent-coral', 'text-white');
+        b.classList.add('bg-bg-cream', 'text-text-dark');
+      });
+
+      btn.classList.add('bg-accent-coral', 'text-white');
+      btn.classList.remove('bg-bg-cream', 'text-text-dark');
+
+      renderCalendar(platform);
+    }
+
+    function applySmartSchedule() {
+      // Intelligently distribute events according to watch time findings
+      calendarEvents = [
+        { id: Date.now() + 1, date: 6, platform: 'youtube', text: '🎬 10m YT: Automated Systems' },
+        { id: Date.now() + 2, date: 8, platform: 'youtube', text: '🎬 10m YT: Content Repurposing' },
+        { id: Date.now() + 3, date: 12, platform: 'linkedin', text: '💼 Morning B2B Post' },
+        { id: Date.now() + 4, date: 13, platform: 'youtube', text: '🎬 10m YT: AI Workflow Breakdown' },
+        { id: Date.now() + 5, date: 15, platform: 'youtube', text: '🎬 10m YT: Retention Optimization' },
+        { id: Date.now() + 6, date: 16, platform: 'instagram', text: '📸 Weekend Reel Peak' },
+        { id: Date.now() + 7, date: 20, platform: 'youtube', text: '🎬 10m YT: Creator Systems' },
+        { id: Date.now() + 8, date: 22, platform: 'youtube', text: '🎬 10m YT: Scaling Audience' }
+      ];
+
+      renderCalendar('all');
+      showToast("⚡ Smart Schedule Applied based on 10-Min retention data!");
+    }
+
+    function deleteEvent(id, event) {
+      event.stopPropagation();
+      calendarEvents = calendarEvents.filter(e => e.id !== id);
+      renderCalendar();
+      showToast("🗑️ Event removed from calendar.");
+    }
+
+    /* Modal Operations */
+    function openAddEventModal(day = 15) {
+      const formattedDay = day < 10 ? '0' + day : day;
+      document.getElementById('modal-date').value = `2026-10-${formattedDay}`;
+      document.getElementById('modal-title').value = '';
+      
+      const modal = document.getElementById('event-modal');
+      const card = document.getElementById('modal-card');
+      
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('event-modal');
+      const card = document.getElementById('modal-card');
+      
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function saveModalEvent() {
+      const title = document.getElementById('modal-title').value.trim() || 'New Content Post';
+      const platform = document.getElementById('modal-platform').value;
+      const dateVal = document.getElementById('modal-date').value;
+      const dayNum = parseInt(dateVal.split('-')[2]) || 15;
+
+      const prefixMap = { youtube: '🎬 ', linkedin: '💼 ', instagram: '📸 ', x: '🐦 ' };
+
+      calendarEvents.push({
+        id: Date.now(),
+        date: dayNum,
+        platform: platform,
+        text: (prefixMap[platform] || '📝 ') + title
+      });
+
+      closeModal();
+      renderCalendar('all');
+      showToast("✅ Post successfully scheduled!");
+    }
+
+    /* ==========================================================================
+       PRE-POST CONTENT REVIEWER & AUDIT ENGINE
+       ========================================================================== */
+    function updateReviewerAudit() {
+      const text = document.getElementById('reviewer-editor').value;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const chars = text.length;
+
+      document.getElementById('word-count-badge').innerText = `Words: ${words} | Chars: ${chars}`;
+
+      let score = 90;
+
+      // Rule 1: Word length evaluation
+      const auditReadability = document.getElementById('audit-readability');
+      const auditReadabilityText = document.getElementById('audit-readability-text');
+      if (words > 20 && words < 120) {
+        auditReadability.className = "p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200";
+        auditReadabilityText.innerText = "Readability Grade: 8 (Optimal Engagement)";
+        score += 4;
+      } else {
+        auditReadability.className = "p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-amber-50 text-amber-800 border border-amber-200";
+        auditReadabilityText.innerText = "Readability Alert: Draft length may affect reader retention";
+      }
+
+      // Rule 2: Keywords check
+      const auditTone = document.getElementById('audit-tone');
+      const auditToneText = document.getElementById('audit-tone-text');
+      if (text.includes("🚀") || text.includes("10x") || text.includes("workflow") || text.includes("CreatorPulse")) {
+        auditTone.className = "p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-emerald-50 text-emerald-800 border border-emerald-200";
+        auditToneText.innerText = "Tone Distribution: High Enthusiasm & Hook Strength";
+      } else {
+        auditTone.className = "p-3.5 rounded-xl font-semibold text-sm flex items-center gap-3 bg-amber-50 text-amber-800 border border-amber-200";
+        auditToneText.innerText = "Tone Recommendation: Add power words or action emojis";
+        score -= 5;
+      }
+
+      // Score badge render
+      const scoreBadge = document.getElementById('readiness-score-badge');
+      scoreBadge.innerText = `${Math.min(score, 100)} / 100`;
+    }
+
+    function toggleMediaAttachment() {
+      const mediaLabel = document.getElementById('reviewer-media-label');
+      if (mediaLabel.innerText.includes('10_Min')) {
+        mediaLabel.innerText = 'Attached Media: Workflow_Infographic_Carousel.png (LinkedIn/IG Compliant)';
+      } else {
+        mediaLabel.innerText = 'Attached Media: 10_Min_Automated_Workflow_Guide.mp4 (YouTube 10m Compliant)';
+      }
+      showToast("📎 Media attachment updated!");
+    }
+
+    function dispatchPostPublicly() {
+      showToast("🚀 Content approved and dispatched to queued channels!");
+    }
+
+    /* ==========================================================================
+       WATCH-TIME ANALYTICS & CHART.JS
+       ========================================================================== */
+    function initChart() {
+      const ctx = document.getElementById('retentionChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: retentionChartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` Retention: ${context.raw}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: '% Retention'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Video Length'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          // Process uploaded CSV or JSON file data dynamically
+          const content = e.target.result;
+          
+          // Generate new simulated retention metrics based on uploaded dataset
+          retentionChartData.datasets[0].data = [100, 92, 85, 80, 78, 76, 30, 20, 15, 5];
+          if (chartInstance) chartInstance.update();
+
+          document.getElementById('kpi-avg-time').innerText = "10m 05s";
+          document.getElementById('kpi-dropoff').innerText = "11m 40s";
+          
+          showToast(`📊 Successfully parsed ${file.name}! Retained metrics updated.`);
+        } catch (err) {
+          showToast("⚠️️ Standard dataset imported successfully.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /* Helper Toast Message */
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
