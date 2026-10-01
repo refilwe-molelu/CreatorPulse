@@ -2,7 +2,7 @@
 
 **AI-powered content generation, analytics, smart scheduling, and automated email dispatch for creators.**
 
-[👉 **Click here to try CreatorPulse live]((https://gemini.google.com/share/110b7f6eb7c0?skid=9f884209-3ddd-4258-b36a-1fa9592dbd8e))**
+[👉 **Click here to try CreatorPulse live](https://gemini.google.com/share/110b7f6eb7c0?skid=9f884209-3ddd-4258-b36a-1fa9592dbd8e)**
 
 ---
 
